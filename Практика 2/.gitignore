@@ -1,29 +1,11 @@
-### IntelliJ IDEA ###
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
-.DS_Store
+/src/main/java/com/example/SortingAlgorithms.java
+src/test/java/com/example/SortingAlgorithmsTest.java
+/target/
+/classes/
+/generated-sources/
+/generated-test-sources/
+/maven-archiver/
+/maven-status/
+/surefire-reports/
+/test-classes/
+/sorting-project-1.0-SNAPSHOT.jar
