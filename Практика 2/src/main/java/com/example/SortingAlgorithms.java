@@ -3,7 +3,10 @@ package com.example;
 public class SortingAlgorithms {
 
     public static void bubbleSort(int[] arr) {
-        if (arr == null) return;
+
+        if (arr == null) {
+            return;
+        }
 
         int n = arr.length;
 
@@ -19,15 +22,20 @@ public class SortingAlgorithms {
     }
 
     public static void quickSort(int[] arr, int low, int high) {
-        if (arr == null || low >= high) return;
+
+        if (arr == null || low >= high) {
+            return;
+        }
 
         int pivot = findPivot(arr, low, high);
 
         quickSort(arr, low, pivot - 1);
+
         quickSort(arr, pivot + 1, high);
     }
 
     private static int findPivot(int[] arr, int low, int high) {
+
         int pivot = arr[high];
         int i = low - 1;
 
@@ -39,7 +47,9 @@ public class SortingAlgorithms {
                 arr[j] = temp;
             }
         }
+
         int temp = arr[i + 1];
+
         arr[i + 1] = arr[high];
         arr[high] = temp;
 

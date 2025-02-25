@@ -9,7 +9,9 @@ public class SortingAlgorithmsTest {
     public void testBubbleSort() {
         int[] arr = {64, 34, 25, 12, 22, 11, 90};
         int[] expected = {11, 12, 22, 25, 34, 64, 90};
+
         SortingAlgorithms.bubbleSort(arr);
+
         assertArrayEquals(expected, arr);
     }
 
@@ -17,7 +19,9 @@ public class SortingAlgorithmsTest {
     public void testQuickSort() {
         int[] arr = {64, 34, 25, 12, 22, 11, 90};
         int[] expected = {11, 12, 22, 25, 34, 64, 90};
+
         SortingAlgorithms.quickSort(arr, 0, arr.length - 1);
+
         assertArrayEquals(expected, arr);
     }
 }
