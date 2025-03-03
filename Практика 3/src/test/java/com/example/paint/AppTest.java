@@ -1,25 +1,28 @@
 package com.example.paint;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.jupiter.api.Test;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class AppTest
-    
-    extends TestCase
-{
-    public AppTest( String testName )
-    {
-        super( testName );
-    }
+public class PaintExampleTest {
 
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
+    @Test
 
-    public void testApp()
-    {
-        assertTrue( true );
+    public void testMain() {
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        PrintStream originalOut = System.out;
+
+        System.setOut(new PrintStream(outputStream));
+
+        PaintExample.main(new String[]{});
+
+        System.setOut(originalOut);
+
+        String output = outputStream.toString();
+        
+        assertTrue(output.contains("Нарисована фигура с координатами (10, 20)"));
     }
 }
