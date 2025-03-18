@@ -1,8 +1,9 @@
 package com.example;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class LinkedListGenericTest {
 
@@ -23,7 +24,7 @@ class LinkedListGenericTest {
         LinkedListGeneric<String> list = new LinkedListGeneric<>();
         list.add("A");
         list.add("C");
-        list.add(1, "B"); 
+        list.add(1, "B");
 
         assertEquals("A", list.get(0));
         assertEquals("B", list.get(1));

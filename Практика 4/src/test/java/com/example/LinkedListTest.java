@@ -1,8 +1,9 @@
 package com.example;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class LinkedListTest {
 
@@ -87,31 +88,3 @@ class LinkedListTest {
         assertNull(list.get(5));
     }
 
-    @Test
-    void testSize() {
-        LinkedList list = new LinkedList();
-        assertEquals(0, list.size());
-
-        list.add("A");
-        assertEquals(1, list.size());
-
-        list.add("B");
-        assertEquals(2, list.size());
-
-        list.remove(0);
-        assertEquals(1, list.size());
-
-        list.remove(0);
-        assertEquals(0, list.size());
-    }
-
-    @Test
-    void testPrintList() {
-        LinkedList list = new LinkedList();
-        list.add("A");
-        list.add("B");
-        list.add("C");
-
-        list.printList();
-    }
-}

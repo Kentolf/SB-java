@@ -1,6 +1,7 @@
 package com.example;
 
 public class LinkedList {
+
     private static class Node {
         String data;
         Node next;

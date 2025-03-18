@@ -1,6 +1,7 @@
 package com.example;
 
 public class LinkedListGeneric<T> {
+
     private static class Node<T> {
         T data;
         Node<T> next;
