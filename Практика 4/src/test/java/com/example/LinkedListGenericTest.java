@@ -4,11 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LinkedListTest {
+class LinkedListGenericTest {
 
     @Test
     void testAddAndGet() {
-        LinkedList list = new LinkedList();
+        LinkedListGeneric<String> list = new LinkedListGeneric<>();
         list.add("A");
         list.add("B");
         list.add("C");
@@ -20,10 +20,10 @@ class LinkedListTest {
 
     @Test
     void testAddAtIndex() {
-        LinkedList list = new LinkedList();
+        LinkedListGeneric<String> list = new LinkedListGeneric<>();
         list.add("A");
         list.add("C");
-        list.add(1, "B");
+        list.add(1, "B"); 
 
         assertEquals("A", list.get(0));
         assertEquals("B", list.get(1));
@@ -32,7 +32,7 @@ class LinkedListTest {
 
     @Test
     void testRemove() {
-        LinkedList list = new LinkedList();
+        LinkedListGeneric<String> list = new LinkedListGeneric<>();
         list.add("A");
         list.add("B");
         list.add("C");
@@ -46,7 +46,7 @@ class LinkedListTest {
 
     @Test
     void testRemoveFirstElement() {
-        LinkedList list = new LinkedList();
+        LinkedListGeneric<String> list = new LinkedListGeneric<>();
         list.add("A");
         list.add("B");
 
@@ -58,7 +58,7 @@ class LinkedListTest {
 
     @Test
     void testRemoveLastElement() {
-        LinkedList list = new LinkedList();
+        LinkedListGeneric<String> list = new LinkedListGeneric<>();
         list.add("A");
         list.add("B");
 
@@ -70,7 +70,7 @@ class LinkedListTest {
 
     @Test
     void testRemoveInvalidIndex() {
-        LinkedList list = new LinkedList();
+        LinkedListGeneric<String> list = new LinkedListGeneric<>();
         list.add("A");
 
         list.remove(5);
@@ -81,7 +81,7 @@ class LinkedListTest {
 
     @Test
     void testGetInvalidIndex() {
-        LinkedList list = new LinkedList();
+        LinkedListGeneric<String> list = new LinkedListGeneric<>();
         list.add("A");
 
         assertNull(list.get(5));
@@ -89,7 +89,7 @@ class LinkedListTest {
 
     @Test
     void testSize() {
-        LinkedList list = new LinkedList();
+        LinkedListGeneric<String> list = new LinkedListGeneric<>();
         assertEquals(0, list.size());
 
         list.add("A");
@@ -107,11 +107,23 @@ class LinkedListTest {
 
     @Test
     void testPrintList() {
-        LinkedList list = new LinkedList();
+        LinkedListGeneric<String> list = new LinkedListGeneric<>();
         list.add("A");
         list.add("B");
         list.add("C");
 
         list.printList();
+    }
+
+    @Test
+    void testGenericWithIntegers() {
+        LinkedListGeneric<Integer> list = new LinkedListGeneric<>();
+        list.add(10);
+        list.add(20);
+        list.add(30);
+
+        assertEquals(10, list.get(0));
+        assertEquals(20, list.get(1));
+        assertEquals(30, list.get(2));
     }
 }

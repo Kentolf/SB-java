@@ -1,28 +1,28 @@
 package com.example;
 
-public class LinkedList {
-    private static class Node {
-        String data;
-        Node next;
+public class LinkedListGeneric<T> {
+    private static class Node<T> {
+        T data;
+        Node<T> next;
 
-        public Node(String data) {
+        public Node(T data) {
             this.data = data;
             this.next = null;
         }
     }
 
-    private Node head;
+    private Node<T> head;
 
-    public LinkedList() {
+    public LinkedListGeneric() {
         this.head = null;
     }
 
-    public void add(String data) {
-        Node newNode = new Node(data);
+    public void add(T data) {
+        Node<T> newNode = new Node<>(data);
         if (head == null) {
             head = newNode;
         } else {
-            Node current = head;
+            Node<T> current = head;
             while (current.next != null) {
                 current = current.next;
             }
@@ -30,17 +30,17 @@ public class LinkedList {
         }
     }
 
-    public void add(int index, String data) {
+    public void add(int index, T data) {
         if (index < 0 || index > size()) {
             System.err.println("Invalid index: " + index);
             return;
         }
-        Node newNode = new Node(data);
+        Node<T> newNode = new Node<>(data);
         if (index == 0) {
             newNode.next = head;
             head = newNode;
         } else {
-            Node current = head;
+            Node<T> current = head;
             for (int i = 0; i < index - 1; i++) {
                 current = current.next;
             }
@@ -49,12 +49,12 @@ public class LinkedList {
         }
     }
 
-    public String get(int index) {
+    public T get(int index) {
         if (index < 0 || index >= size()) {
             System.err.println("Invalid index: " + index);
             return null;
         }
-        Node current = head;
+        Node<T> current = head;
         for (int i = 0; i < index; i++) {
             current = current.next;
         }
@@ -69,7 +69,7 @@ public class LinkedList {
         if (index == 0) {
             head = head.next;
         } else {
-            Node current = head;
+            Node<T> current = head;
             for (int i = 0; i < index - 1; i++) {
                 current = current.next;
             }
@@ -79,7 +79,7 @@ public class LinkedList {
 
     public int size() {
         int count = 0;
-        Node current = head;
+        Node<T> current = head;
         while (current != null) {
             count++;
             current = current.next;
@@ -88,7 +88,7 @@ public class LinkedList {
     }
 
     public void printList() {
-        Node current = head;
+        Node<T> current = head;
         while (current != null) {
             System.out.print(current.data + " -> ");
             current = current.next;
