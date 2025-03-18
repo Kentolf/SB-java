@@ -3,9 +3,7 @@ package com.example.paint;
 public class PaintExample {
 
     public static void main(String[] args) {
-
         Point point = new Point(10, 20);
-
 
         Circle circle = new Circle(point, 5);
         Rectangle rectangle = new Rectangle(point, 10, 20);
