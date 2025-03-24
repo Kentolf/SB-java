@@ -7,6 +7,7 @@ public interface Command {
 
     @Retention(RetentionPolicy.RUNTIME) // рефлексия
     @Target(ElementType.TYPE) // обозначения для поиска
+
     @interface Operation {
         String symbol(); // символ
         int priority() default 1; // приоритет

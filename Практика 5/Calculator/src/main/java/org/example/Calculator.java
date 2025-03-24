@@ -10,10 +10,12 @@ public class Calculator {
     }
 
     public void run() {
+
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter the expression:");
 
         while (true) {
+
             System.out.print("> ");
             String input = scanner.nextLine(); // считываем выражение
 
@@ -21,10 +23,11 @@ public class Calculator {
                 break;
             }
 
-            try { // обрабатывает выражение с помощью парсера
-                double result = parser.evaluate(input);
+            try {
+                double result = parser.evaluate(input); // обрабатывает выражение с помощью парсера
                 System.out.println("= " + result);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 System.out.println(e.getMessage());
             }
         }
@@ -33,6 +36,7 @@ public class Calculator {
     }
 
     public static void main(String[] args) {
+
         Calculator calculator = new Calculator();
         calculator.run();
     }

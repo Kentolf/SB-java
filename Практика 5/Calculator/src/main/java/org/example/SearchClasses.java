@@ -6,15 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SearchClasses {
-    public static List<Class<?>> getClasses(String packageName)
-            throws Exception {
+    public static List<Class<?>> getClasses(String packageName) throws Exception {
         List<Class<?>> classes = new ArrayList<>();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         String path = packageName.replace('.', '/'); // преобразует пакет в путь
 
         URL resource = classLoader.getResource(path);
-        if (resource == null) // проверка
+        if (resource == null) { // проверка
             throw new Exception("Package not found: " + packageName);
+        }
 
         File dir = new File(resource.toURI());
         for (File file : dir.listFiles()) { // ищет все классы в директории

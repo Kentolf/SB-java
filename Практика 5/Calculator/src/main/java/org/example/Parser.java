@@ -16,6 +16,7 @@ public class Parser {
     private void loadCommands() { // загрузка операций (через рефлексию)
         try {
             List<Class<?>> classes = SearchClasses.getClasses("org.example");
+
             for (Class<?> clazz : classes) {
                 if (clazz.isAnnotationPresent(Command.Operation.class)) {
                     Command.Operation annotation = clazz.getAnnotation(Command.Operation.class);
@@ -45,17 +46,14 @@ public class Parser {
                 }
                 i--;
                 numbers.push(Double.parseDouble(numStr.toString()));
-            }
-            else if (c == '(') { // обработка выражения в скобках
+            } else if (c == '(') { // обработка выражения в скобках
                 operators.push("(");
-            }
-            else if (c == ')') {
+            } else if (c == ')') {
                 while (!operators.peek().equals("(")) {
                     applyOperation(numbers, operators.pop());
                 }
                 operators.pop();
-            }
-            else if (commands.containsKey(String.valueOf(c))) { // обработка операций с учетом приоритетов
+            } else if (commands.containsKey(String.valueOf(c))) { // обработка операций с учетом приоритетов
                 String op = String.valueOf(c);
                 while (!operators.isEmpty() &&
                         !operators.peek().equals("(") &&
