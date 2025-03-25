@@ -14,13 +14,24 @@ public class Shell {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             System.out.print("> ");
-            String input = scanner.nextLine().trim().toLowerCase(); // читаем и преобразуем команду
+            String input = scanner.nextLine().trim();
 
             if (input.equalsIgnoreCase("exit")) {
                 break;
             }
 
-            Command command = commands.get(input);
+            if (input.endsWith("/?")) { // вывод подсказки
+                String commandName = input.substring(0, input.length() - 2).trim().toLowerCase();
+                Command command = commands.get(commandName);
+                if (command != null) {
+                    System.out.println(command.description());
+                } else {
+                    System.out.println("Command not found: " + commandName);
+                }
+                continue;
+            }
+
+            Command command = commands.get(input.toLowerCase());
             if (command != null) {
                 command.execute();
             } else {

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SearchClasses {
-    public static Map<String, Command> loadCommands(String packageName) { // загружаем команды
+    public static Map<String, Command> loadCommands(String packageName) {
         Map<String, Command> commands = new HashMap<>();
         try {
             List<Class<?>> classes = getClasses(packageName);
@@ -16,7 +16,8 @@ public class SearchClasses {
             for (Class<?> clazz : classes) {
                 if (Command.class.isAssignableFrom(clazz) && !clazz.isInterface()) {
                     Command command = (Command) clazz.getDeclaredConstructor().newInstance();
-                    commands.put(clazz.getSimpleName().replace("Command", "").toLowerCase(), command);
+                    String commandName = clazz.getSimpleName().replace("Command", "").toLowerCase();
+                    commands.put(commandName, command);
                 }
             }
         } catch (Exception e) {
@@ -25,7 +26,7 @@ public class SearchClasses {
         return commands;
     }
 
-    private static List<Class<?>> getClasses(String packageName) throws Exception { // поиск команд из калькулятора
+    private static List<Class<?>> getClasses(String packageName) throws Exception {
         List<Class<?>> classes = new ArrayList<>();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         String path = packageName.replace('.', '/');

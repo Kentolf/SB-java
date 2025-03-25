@@ -8,4 +8,9 @@ public class DateCommand implements Command {
     public void execute() {
         System.out.println(LocalDate.now());
     }
+
+    @Override
+    public String description() {
+        return "Выводит текущую дату";
+    }
 }
