@@ -3,10 +3,10 @@ package com.example;
 public class LinkedList {
 
     private static class Node {
-        String data;
+        Object data;
         Node next;
 
-        public Node(String data) {
+        public Node(Object data) {
             this.data = data;
             this.next = null;
         }
@@ -18,7 +18,7 @@ public class LinkedList {
         this.head = null;
     }
 
-    public void add(String data) {
+    public void add(Object data) {
         Node newNode = new Node(data);
         if (head == null) {
             head = newNode;
@@ -31,7 +31,7 @@ public class LinkedList {
         }
     }
 
-    public void add(int index, String data) {
+    public void add(int index, Object data) {
         if (index < 0 || index > size()) {
             System.err.println("Invalid index: " + index);
             return;
@@ -50,7 +50,7 @@ public class LinkedList {
         }
     }
 
-    public String get(int index) {
+    public Object get(int index) {
         if (index < 0 || index >= size()) {
             System.err.println("Invalid index: " + index);
             return null;
