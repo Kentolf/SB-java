@@ -2,7 +2,7 @@ package org.example;
 
 import java.io.File;
 
-@CommandInfo(name = "ls", description = "Выводит список файлов в директории (по умолчанию текущая)")
+@CommandInfo(name = "ls", description = "Выводит список файлов в директории")
 public class LsCommand implements Command {
     @Override
     public void exec(String[] args) throws CommandExecutionException {

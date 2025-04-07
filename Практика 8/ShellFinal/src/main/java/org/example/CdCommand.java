@@ -2,7 +2,7 @@ package org.example;
 
 import java.io.File;
 
-@CommandInfo(name = "cd", description = "Меняет текущую директорию")
+@CommandInfo(name = "cd", description = "Меняет директорию")
 public class CdCommand implements Command {
     private static File currentDir = new File(System.getProperty("user.dir"));
 
@@ -15,7 +15,7 @@ public class CdCommand implements Command {
 
         File newDir = new File(currentDir, args[0]);
         if (!newDir.isDirectory()) {
-            throw new CommandExecutionException("cd", "Директория не существует: " + args[0]);
+            throw new CommandExecutionException("cd", "Директории не существует: " + args[0]);
         }
 
         currentDir = newDir;
