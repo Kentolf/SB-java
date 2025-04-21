@@ -26,7 +26,8 @@ public class Analyzer {
                     }
                 }
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             System.out.println("Error reading the file: " + e.getMessage());
             return;
         }
