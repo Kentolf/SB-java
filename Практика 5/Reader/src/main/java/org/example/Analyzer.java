@@ -15,23 +15,42 @@ public class Analyzer {
         }
 
         String filePath = args[0];
-        Map<String, Integer> wordFrequencyMap = new HashMap<>();
+        Map<String, Integer> wordMap = new HashMap<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
+
             while ((line = reader.readLine()) != null) {
-                for (String word : line.replaceAll("[^a-zA-Zа-яА-Я\\s]", "").toLowerCase().split("\\s+")) {
-                    if (!word.isEmpty()) {
-                        wordFrequencyMap.put(word, wordFrequencyMap.getOrDefault(word, 0) + 1);
+                line = line.toLowerCase();
+                StringBuilder wordBuilder = new StringBuilder();
+
+                for (int i = 0; i < line.length(); i++) {
+                    char ch = line.charAt(i);
+
+                    if (Character.isDigit(ch) || Character.isLetter(ch)) {
+                        wordBuilder.append(ch);
                     }
+
+                    else if (wordBuilder.length() > 0) {
+                        String word = wordBuilder.toString();
+                        wordMap.put(word, wordMap.getOrDefault(word, 0) + 1);
+                        wordBuilder.setLength(0);
+                    }
+                }
+
+                if (wordBuilder.length() > 0) {
+                    String word = wordBuilder.toString();
+                    wordMap.put(word, wordMap.getOrDefault(word, 0) + 1);
                 }
             }
         }
+
         catch (IOException e) {
-            System.out.println("Error reading the file: " + e.getMessage());
-            return;
+            System.out.println(e.getMessage());
         }
 
-        wordFrequencyMap.forEach((word, count) -> System.out.println(word + ": " + count));
+        for (Map.Entry<String, Integer> entry : wordMap.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
     }
 }
