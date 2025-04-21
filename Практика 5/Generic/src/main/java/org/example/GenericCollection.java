@@ -6,19 +6,16 @@ public class GenericCollection<T> {
     private int size;
 
     public GenericCollection() {
-        
         elements = new Object[10];
         size = 0;
     }
 
     public void add(T element) {
-
         capacity();
         elements[size++] = element;
     }
 
     public void remove(int index) {
-
         if (index < 0 || index >= size) {
             System.err.println("Invalid index: " + index);
             return;
@@ -32,7 +29,6 @@ public class GenericCollection<T> {
     }
 
     public T get(int index) {
-
         if (index < 0 || index >= size) {
             System.err.println("Invalid index: " + index);
             return null;
@@ -46,14 +42,12 @@ public class GenericCollection<T> {
     }
 
     public void printAll() {
-
         for (int i = 0; i < size; i++) {
             System.out.println(elements[i]);
         }
     }
 
     private void capacity() {
-
         if (size == elements.length) {
             Object[] newArray = new Object[elements.length + 1];
 
