@@ -1,0 +1,29 @@
+2025-05-04 01:12:54.078539+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Столбец "user_id" не найден
+Column "user_id" not found; SQL statement:
+    CREATE TABLE IF NOT EXISTS participants (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        event_id INT NOT NULL,
+        "user_id" BIGINT NOT NULL,
+         FOREIGN KEY (event_id) REFERENCES events(id),
+         FOREIGN KEY ("user_id") REFERENCES users("user_id")
+  [42122-232]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.message.DbException.get(DbException.java:199)
+	at org.h2.table.Table.getColumn(Table.java:786)
+	at org.h2.table.IndexColumn.mapColumns(IndexColumn.java:184)
+	at org.h2.command.ddl.AlterTableAddConstraint.tryUpdate(AlterTableAddConstraint.java:219)
+	at org.h2.command.ddl.AlterTableAddConstraint.update(AlterTableAddConstraint.java:74)
+	at org.h2.command.ddl.AlterTable.update(AlterTable.java:46)
+	at org.h2.command.ddl.CommandWithColumns.createConstraints(CommandWithColumns.java:83)
+	at org.h2.command.ddl.CreateTable.update(CreateTable.java:134)
+	at org.h2.command.CommandContainer.update(CommandContainer.java:139)
+	at org.h2.command.Command.executeUpdate(Command.java:304)
+	at org.h2.command.Command.executeUpdate(Command.java:248)
+	at org.h2.jdbc.JdbcStatement.executeUpdateInternal(JdbcStatement.java:196)
+	at org.h2.jdbc.JdbcStatement.executeUpdate(JdbcStatement.java:147)
+	at sb.bot.DatabaseManager.initDatabase(DatabaseManager.java:47)
+	at sb.bot.DatabaseManager.<init>(DatabaseManager.java:22)
+	at sb.bot.Main.main(Main.java:19)
