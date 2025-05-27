@@ -1,9 +1,9 @@
 package org.example;
 
 public class Main {
-    private static final int[] THREADS_TO_TEST = {1, 2, 3, 4, 5, 6};
-    private static final int DEFAULT_THREADS = 4;
-    private static final int TOP_RESULTS_TO_SHOW = 15;
+    private static final int[] Threads = {1, 2, 3, 4, 5, 6};
+    private static final int Default_Theads = 4;
+    private static final int Top = 15;
 
     public static void main(String[] args) {
 
@@ -15,21 +15,21 @@ public class Main {
     private static void runPerformanceTests(String folderPath) {
         System.out.println("Тесты с разным числом потоков:");
 
-        for (int i = 0; i < THREADS_TO_TEST.length; i++) {
-            int threads = THREADS_TO_TEST[i];
-            {
-                try {
-                    Analyzer analyzer = new Analyzer(folderPath, threads);
-                    long startTime = System.nanoTime();
+        for (int i = 0; i < Threads.length; i++) {
+            int threads = Threads[i]; {
+            try {
+                Analyzer analyzer = new Analyzer(folderPath, threads);
+                long startTime = System.nanoTime();
 
-                    analyzer.analyzeFiles();
+                analyzer.analyzeFiles();
 
-                    long durationMs = (System.nanoTime() - startTime) / 1_000_000;
-                    printTestResult(threads, durationMs, analyzer.getUniqueWordsCount());
-                } catch (Exception e) {
-                    System.err.printf("Ошибка при тесте с %d потоками: %s%n", threads, e.getMessage());
-                }
+                long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+                printTestResult(threads, durationMs, analyzer.getUniqueWordsCount());
             }
+            catch (Exception e) {
+                System.err.printf("Ошибка при тесте с %d потоками: %s%n", threads, e.getMessage());
+            }
+        }
         }
     }
 
@@ -39,10 +39,10 @@ public class Main {
     }
 
     private static void runFinalAnalysis(String folderPath) {
-        System.out.printf("%nФинальный анализ (Количество потоков: %d):%n", DEFAULT_THREADS);
+        System.out.printf("%nФинальный анализ (Количество потоков: %d):%n", Default_Theads);
 
         try {
-            Analyzer analyzer = new Analyzer(folderPath, DEFAULT_THREADS);
+            Analyzer analyzer = new Analyzer(folderPath, Default_Theads);
             long startTime = System.nanoTime();
 
             analyzer.analyzeFiles();
@@ -50,7 +50,7 @@ public class Main {
             long durationMs = (System.nanoTime() - startTime) / 1_000_000;
             System.out.printf("Общее время анализа: %d мс%n", durationMs);
 
-            analyzer.displayTopWords(TOP_RESULTS_TO_SHOW);
+            analyzer.displayTopWords(Top);
         }
         catch (Exception e) {
             System.err.println(e.getMessage());
