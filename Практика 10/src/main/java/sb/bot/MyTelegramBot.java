@@ -25,14 +25,12 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     private final Map<String, String> userTempData = new HashMap<>();
 
-    public MyTelegramBot(EventService eventService) {
-        this.eventService = eventService;
-    }
+    private final Map<String, CommandInfo> textCommands = new HashMap<>();
+    private final Map<UserState, BotCommandHandler> stateHandlers = new HashMap<>();
 
     private enum UserState {
         DEFAULT,
         AWAITING_EVENT_NAME,
-        AWAITING_EVENT_ID,
         AWAITING_AVAILABILITY,
         AWAITING_SHOW_TIME_ID,
         AWAITING_DATE_FOR_AVAILABILITY,
@@ -42,12 +40,12 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "Имя бота (без @)";
+        return "CoolEventPlannerBot";
     }
 
     @Override
     public String getBotToken() {
-        return "Токен бота";
+        return "7848177215:AAF105GExdRmarjsQcO3FfEFrfob-rGrazU";
     }
 
     @Override
@@ -80,6 +78,11 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @FunctionalInterface
+    interface BotCommandHandler {
+        void handle(Update update, SendMessage message, String userId) throws TelegramApiException;
     }
 
     private void handleInviteLink(Update update, String code) {
@@ -225,79 +228,43 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         try {
             UserState currentState = userStates.getOrDefault(userId, UserState.DEFAULT);
 
-            if (messageText.equals("/start") || messageText.equals("Главное меню")) {
-                handleMainMenu(message, userId);
-            }
-            else if (currentState == UserState.AWAITING_EVENT_NAME) {
-                handleEventCreation(message, messageText, userId);
-            }
-            else if (currentState == UserState.AWAITING_EVENT_ID) {
-                handleEventJoining(message, messageText, userId);
-            }
-            else if (currentState == UserState.AWAITING_AVAILABILITY) {
-                handleAvailabilitySetting(message, messageText, userId);
-            }
-            else if (currentState == UserState.AWAITING_SHOW_TIME_ID) {
-                handleShowTimeRequest(message, messageText, userId);
-            }
-            else if (currentState == UserState.AWAITING_DATE_FOR_DELETION) {
-                handleDeleteDateInput(message, messageText, userId);
-            }
-            else if (currentState == UserState.AWAITING_REMINDER_TEXT) {
-                handleReminderTextInput(message, messageText, userId);
-            }
-            else if (messageText.startsWith("/create_event") || messageText.startsWith("Создать событие")) {
-                userStates.put(userId, UserState.AWAITING_EVENT_NAME);
-                message.setText("Введите название события:");
-                message.setReplyMarkup(createCancelKeyboard());
-            }
-            else if (messageText.startsWith("/available") || messageText.startsWith("Ввести время")) {
-                userStates.put(userId, UserState.AWAITING_DATE_FOR_AVAILABILITY);
-                message.setText("Введите дату: ");
-                message.setReplyMarkup(createCancelKeyboard());
-            }
-            else if (messageText.startsWith("/show_time") || messageText.startsWith("Показать время")) {
-                handleShowCommonTime(message, userId);
-            }
-            else if (messageText.equals("Удалить время")) {
-                handleDeleteTimeCommand(message, userId);
-            }
-            else if (messageText.equals("Отправить уведомление")) {
-                handleRemindParticipantsCommand(message, userId);
-            }
-            else if (messageText.startsWith("/get_link") || messageText.startsWith("Получить ссылку")) {
-                handleGetInviteLink(message, userId);
-            }
-            else if (messageText.equals("/help") || messageText.equals("Помощь")) {
-                showHelp(message);
-                userStates.put(userId, UserState.DEFAULT);
-            }
-            else if (currentState == UserState.AWAITING_DATE_FOR_AVAILABILITY) {
-                handleDateInputForAvailability(message, messageText, userId, chatId);
-            }
-            else {
-                message.setText("Неизвестная команда. Напишите /help для списка команд.");
-                message.setReplyMarkup(createMainKeyboard());
-                userStates.put(userId, UserState.DEFAULT);
+            BotCommandHandler stateHandler = stateHandlers.get(currentState);
+            if (stateHandler != null) {
+                stateHandler.handle(update, message, userId);
+                execute(message);
+                return;
             }
 
+            CommandInfo commandInfo = textCommands.get(messageText);
+            if (commandInfo != null) {
+                if (commandInfo.getRequiredState() == null ||
+                        commandInfo.getRequiredState() == currentState) {
+                    commandInfo.getHandler().handle(update, message, userId);
+                    execute(message);
+                    return;
+                }
+            }
+
+            message.setText("Неизвестная команда. Напишите /help для списка команд.");
+            message.setReplyMarkup(createMainKeyboard());
+            userStates.put(userId, UserState.DEFAULT);
             execute(message);
-        }
-        catch (TelegramApiException e) {
+        } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
 
-    private void handleMainMenu(SendMessage message, String userId) {
+    private void handleMainMenu(Update update, SendMessage message, String userId) throws TelegramApiException {
         userStates.put(userId, UserState.DEFAULT);
         message.setText("Выберите действие:");
         message.setReplyMarkup(createMainKeyboard());
     }
 
-    private void handleEventCreation(SendMessage message, String messageText, String userId) {
-        String eventName = messageText.trim();
+    private void handleEventCreation(Update update, SendMessage message, String userId) throws TelegramApiException {
+        String eventName = update.getMessage().getText().trim();
         if (eventName.isEmpty()) {
             message.setText("Название события не может быть пустым. Попробуйте еще раз.");
+            message.setReplyMarkup(createCancelKeyboard());
             return;
         }
 
@@ -305,75 +272,32 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         if (eventId != -1) {
             eventService.joinEvent(eventId, userId);
             message.setText("Событие \"" + eventName + "\" успешно создано");
-        }
-        else {
+        } else {
             message.setText("Произошла ошибка при создании события.");
         }
         resetUserState(message, userId);
     }
 
-    private void handleEventJoining(SendMessage message, String messageText, String userId) {
-        try {
-            int eventId = Integer.parseInt(messageText.trim());
-            boolean success = eventService.joinEvent(eventId, userId);
-
-            if (success) {
-                message.setText("Вы успешно присоединились к событию!");
-            }
-            else {
-                message.setText("Не удалось присоединиться. Проверьте правильность ссылки.");
-            }
-        }
-        catch (NumberFormatException e) {
-            message.setText("ID события должно быть числом. Попробуйте еще раз.");
-            userStates.put(userId, UserState.AWAITING_EVENT_ID);
-            message.setReplyMarkup(createCancelKeyboard());
-            return;
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            message.setText("Произошла ошибка при присоединении к событию.");
-        }
-        resetUserState(message, userId);
+    private void handleEventCreationCommand(Update update, SendMessage message, String userId) throws TelegramApiException {
+        userStates.put(userId, UserState.AWAITING_EVENT_NAME);
+        message.setText("Введите название события:");
+        message.setReplyMarkup(createCancelKeyboard());
     }
 
-    private void handleAvailabilitySetting(SendMessage message, String messageText, String userId) {
-        String[] parts = messageText.split("\\s+");
-        if (parts.length < 3) {
-            message.setText("Неверный формат. Введите: ДД.ММ.ГГГГ ЧЧ:ММ ЧЧ:ММ");
-            return;
-        }
-
-        try {
-            String date = parts[0];
-            String startTime = parts[1];
-            String endTime = parts[2];
-
-            LocalDateTime start = LocalDateTime.parse(date + " " + startTime, DATE_TIME_FORMATTER);
-            LocalDateTime end = LocalDateTime.parse(date + " " + endTime, DATE_TIME_FORMATTER);
-
-            Integer eventId = eventService.getEventIdForUser(userId);
-            if (eventId == null) {
-                message.setText("Вы не присоединены ни к одному событию.");
-            }
-            else {
-                eventService.addAvailability(eventId, userId, start, end);
-                message.setText("Ваше свободное время сохранено для события ID: " + eventId);
-            }
-        }
-        catch (Exception e) {
-            message.setText("Ошибка формата. Используйте: ДД.ММ.ГГГГ ЧЧ:ММ ЧЧ:ММ");
-        }
-        resetUserState(message, userId);
+    private void handleAvailableCommand(Update update, SendMessage message, String userId) throws TelegramApiException {
+        userStates.put(userId, UserState.AWAITING_DATE_FOR_AVAILABILITY);
+        message.setText("Введите дату:");
+        message.setReplyMarkup(createCancelKeyboard());
     }
 
-    private void handleShowCommonTime(SendMessage message, String userId) {
+    private void handleShowTimeCommand(Update update, SendMessage message, String userId) throws TelegramApiException {
         try {
             Integer eventId = eventService.getEventIdForUser(userId);
 
             if (eventId == null) {
                 message.setText("Вы не присоединены ни к одному событию.\n" +
                         "Чтобы присоединиться, перейдите по ссылке-приглашению от организатора.");
+                resetUserState(message, userId);
                 return;
             }
 
@@ -382,8 +306,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
             if (commonSlots.isEmpty()) {
                 message.setText("Для события \"" + eventName + "\" пока нет пересечений свободного времени участников.");
-            }
-            else {
+            } else {
                 StringBuilder sb = new StringBuilder("Общее свободное время для события \"" + eventName + "\":\n");
                 DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -398,31 +321,31 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                 }
                 message.setText(sb.toString());
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             message.setText("Произошла ошибка при получении данных о событии.");
         }
-
-        message.setReplyMarkup(createMainKeyboard());
+        resetUserState(message, userId);
     }
 
-    private void handleShowTimeRequest(SendMessage message, String messageText, String userId) {
+    private void handleShowCommonTime(Update update, SendMessage message, String userId) throws TelegramApiException {
         try {
-            int eventId = Integer.parseInt(messageText.trim());
+            Integer eventId = eventService.getEventIdForUser(userId);
 
-            if (!eventService.isUserJoinedToEvent(eventId, userId)) {
-                message.setText("Вы не присоединены к событию " + eventId + ". Используйте /join_event " + eventId);
+            if (eventId == null) {
+                message.setText("Вы не присоединены ни к одному событию.\n" +
+                        "Чтобы присоединиться, перейдите по ссылке-приглашению от организатора.");
                 resetUserState(message, userId);
                 return;
             }
 
+            String eventName = eventService.getEventName(eventId);
             var commonSlots = eventService.findCommonTimeSlots(eventId);
+
             if (commonSlots.isEmpty()) {
-                message.setText("Нет пересечений свободного времени для участников.");
-            }
-            else {
-                StringBuilder sb = new StringBuilder("Общее свободное время:\n");
+                message.setText("Для события \"" + eventName + "\" пока нет пересечений свободного времени участников.");
+            } else {
+                StringBuilder sb = new StringBuilder("Общее свободное время для события \"" + eventName + "\":\n");
                 DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
                 for (var slot : commonSlots) {
@@ -436,15 +359,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                 }
                 message.setText(sb.toString());
             }
-        }
-        catch (NumberFormatException e) {
-            message.setText("ID должно быть числом. Попробуйте снова.");
-            userStates.put(userId, UserState.AWAITING_SHOW_TIME_ID);
-            message.setReplyMarkup(createCancelKeyboard());
-            return;
-        }
-        catch (Exception e) {
-            message.setText("Ошибка при получении данных о событии.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            message.setText("Произошла ошибка при получении данных о событии.");
         }
         resetUserState(message, userId);
     }
@@ -486,14 +403,18 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleDateInputForAvailability(SendMessage message, String dateStr, String userId, long chatId) {
+    private void handleDateInputForAvailability(Update update, SendMessage message, String userId) throws TelegramApiException {
+        String dateStr = update.getMessage().getText();
+        long chatId = update.getMessage().getChatId();
+        message.setChatId(String.valueOf(chatId));
+
         try {
             LocalDate date = parseHumanReadableDate(dateStr);
             if (date == null) {
-                message.setText("Неверный формат даты. Попробуйте еще раз, например:\n"
-                        + "• Сегодня\n"
-                        + "• Завтра\n"
-                        + "• 06.05.2025");
+                message.setText("Неверный формат даты. Попробуйте еще раз, например:\n" +
+                        "• Сегодня\n" +
+                        "• Завтра\n" +
+                        "• 06.05.2025");
                 message.setReplyMarkup(createCancelKeyboard());
                 return;
             }
@@ -561,30 +482,29 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleDeleteDateInput(SendMessage message, String dateStr, String userId) {
+    private void handleDeleteDateInput(Update update, SendMessage message, String userId) throws TelegramApiException {
+        String dateStr = update.getMessage().getText();
         try {
             LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
             Integer eventId = eventService.getEventIdForUser(userId);
 
             if (eventId == null) {
                 message.setText("Вы не участвуете ни в одном событии");
-            }
-            else {
+            } else {
                 boolean success = eventService.deleteAvailabilityForDate(eventId, userId, date);
                 message.setText(success ?
                         "Ваши записи за " + dateStr + " удалены" :
                         "Не найдено записей за указанную дату");
             }
-        }
-        catch (DateTimeParseException e) {
+        } catch (DateTimeParseException e) {
             message.setText("Неверный формат даты. Используйте ДД.ММ.ГГГГ");
-        }
-        finally {
+        } finally {
             resetUserState(message, userId);
         }
     }
 
-    private void handleDeleteTimeCommand(SendMessage message, String userId) {
+
+    private void handleDeleteTimeCommand(Update update, SendMessage message, String userId) throws TelegramApiException {
         userStates.put(userId, UserState.AWAITING_DATE_FOR_DELETION);
         message.setText("Выберите действие:\n" +
                 "1. Удалить все мои записи\n" +
@@ -623,7 +543,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     }
 
-    private void handleGetInviteLink(SendMessage message, String userId) {
+    private void handleGetInviteLink(Update update, SendMessage message, String userId) throws TelegramApiException {
         Integer eventId = eventService.getEventIdForUser(userId);
         if (eventId == null) {
             message.setText("Вы не участвуете ни в одном событии.");
@@ -705,11 +625,13 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     private void showHelp(SendMessage message) {
         message.setText("""
                 Доступные команды (но лучше используйте кнопки):
-                /create_event - Создать новое событие
-                /available - Указать своё свободное время
-                /show_time - Показать общее свободное время
-                /delete_available - Удалить свободное время
-                /help - Показать эту справку
+                            /create_event - Создать новое событие
+                            /available - Указать своё свободное время
+                            /show_time - Показать общее свободное время для вашего события
+                            /show_my_time - Показать общее свободное время для вашего события
+                            /delete_available - Удалить свободное время
+                            /get_invite - Получить ссылку-приглашение (для создателя)
+                            /help - Показать эту справку
                 """);
     }
 
@@ -907,7 +829,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         return merged;
     }
 
-    private void handleRemindParticipantsCommand(SendMessage message, String userId) {
+    private void handleRemindParticipantsCommand(Update update, SendMessage message, String userId) throws TelegramApiException {
         Integer eventId = eventService.getEventIdForUser(userId);
         if (eventId == null) {
             message.setText("Вы не участвуете ни в одном событии.");
@@ -925,7 +847,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         message.setReplyMarkup(createCancelKeyboard());
     }
 
-    private void handleReminderTextInput(SendMessage message, String reminderText, String userId) {
+    private void handleReminderTextInput(Update update, SendMessage message, String userId) throws TelegramApiException {
+        String reminderText = update.getMessage().getText();
         try {
             Integer eventId = eventService.getEventIdForUser(userId);
             if (eventId == null) {
@@ -955,11 +878,82 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
             message.setText("Уведомление отправлено " + sentCount + " участникам.");
             resetUserState(message, userId);
-
         } catch (Exception e) {
             e.printStackTrace();
             message.setText("Произошла ошибка при отправке уведомления.");
             resetUserState(message, userId);
         }
+    }
+
+    public MyTelegramBot(EventService eventService) {
+        this.eventService = eventService;
+        initializeCommands();
+    }
+
+    private void initializeCommands() {
+        // Обработчики для текстовых команд
+        textCommands.put("/start", new CommandInfo("/start", this::handleMainMenu, UserState.DEFAULT));
+        textCommands.put("Главное меню", new CommandInfo("Главное меню", this::handleMainMenu, UserState.DEFAULT));
+
+        textCommands.put("/create_event", new CommandInfo("/create_event",
+                this::handleEventCreationCommand, UserState.DEFAULT));
+        textCommands.put("Создать событие", new CommandInfo("Создать событие",
+                this::handleEventCreationCommand, UserState.DEFAULT));
+
+        textCommands.put("/available", new CommandInfo("/available",
+                this::handleAvailableCommand, UserState.DEFAULT));
+        textCommands.put("Ввести время", new CommandInfo("Ввести время",
+                this::handleAvailableCommand, UserState.DEFAULT));
+
+        textCommands.put("/show_time", new CommandInfo("/show_time",
+                this::handleShowTimeCommand, UserState.DEFAULT));
+        textCommands.put("Показать время", new CommandInfo("Показать время",
+                this::handleShowTimeCommand, UserState.DEFAULT));
+
+        textCommands.put("/show_my_time", new CommandInfo("/show_my_time",
+                this::handleShowCommonTime, UserState.DEFAULT));
+        textCommands.put("Моё время", new CommandInfo("Моё время",
+                this::handleShowCommonTime, UserState.DEFAULT));
+
+        textCommands.put("/delete_available", new CommandInfo("/delete_available",
+                this::handleDeleteTimeCommand, UserState.DEFAULT));
+        textCommands.put("Удалить время", new CommandInfo("Удалить время",
+                this::handleDeleteTimeCommand, UserState.DEFAULT));
+
+        textCommands.put("/get_invite", new CommandInfo("/get_invite",
+                this::handleGetInviteLink, UserState.DEFAULT));
+        textCommands.put("Получить ссылку", new CommandInfo("Получить ссылку",
+                this::handleGetInviteLink, UserState.DEFAULT));
+
+        textCommands.put("/help", new CommandInfo("/help",
+                (update, message, userId) -> showHelp(message), UserState.DEFAULT));
+        textCommands.put("Помощь", new CommandInfo("Помощь",
+                (update, message, userId) -> showHelp(message), UserState.DEFAULT));
+
+        textCommands.put("Отправить уведомление", new CommandInfo("Отправить уведомление",
+                this::handleRemindParticipantsCommand, UserState.DEFAULT));
+
+        // Обработчики для состояний
+        stateHandlers.put(UserState.AWAITING_EVENT_NAME, this::handleEventCreation);
+        stateHandlers.put(UserState.AWAITING_DATE_FOR_AVAILABILITY, this::handleDateInputForAvailability);
+        stateHandlers.put(UserState.AWAITING_DATE_FOR_DELETION, this::handleDeleteDateInput);
+        stateHandlers.put(UserState.AWAITING_REMINDER_TEXT, this::handleReminderTextInput);
+        // Removed: stateHandlers.put(UserState.AWAITING_SHOW_TIME_ID, this::handleShowTimeRequest);
+    }
+
+
+    class CommandInfo {
+        private final String command;
+        private final BotCommandHandler handler;
+        private final UserState requiredState;
+
+        public CommandInfo(String command, BotCommandHandler handler, UserState requiredState) {
+            this.command = command;
+            this.handler = handler;
+            this.requiredState = requiredState;
+        }
+
+        public BotCommandHandler getHandler() { return handler; }
+        public UserState getRequiredState() { return requiredState; }
     }
 }
