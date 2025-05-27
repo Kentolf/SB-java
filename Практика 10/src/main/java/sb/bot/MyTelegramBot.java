@@ -891,7 +891,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
     private void initializeCommands() {
-        // Обработчики для текстовых команд
+
         textCommands.put("/start", new CommandInfo("/start", this::handleMainMenu, UserState.DEFAULT));
         textCommands.put("Главное меню", new CommandInfo("Главное меню", this::handleMainMenu, UserState.DEFAULT));
 
@@ -932,13 +932,11 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
         textCommands.put("Отправить уведомление", new CommandInfo("Отправить уведомление",
                 this::handleRemindParticipantsCommand, UserState.DEFAULT));
-
-        // Обработчики для состояний
+        
         stateHandlers.put(UserState.AWAITING_EVENT_NAME, this::handleEventCreation);
         stateHandlers.put(UserState.AWAITING_DATE_FOR_AVAILABILITY, this::handleDateInputForAvailability);
         stateHandlers.put(UserState.AWAITING_DATE_FOR_DELETION, this::handleDeleteDateInput);
         stateHandlers.put(UserState.AWAITING_REMINDER_TEXT, this::handleReminderTextInput);
-        // Removed: stateHandlers.put(UserState.AWAITING_SHOW_TIME_ID, this::handleShowTimeRequest);
     }
 
 
